@@ -113,7 +113,7 @@ BigInt_add:
 /* begin skipMemset : */
 skipMemset:
     /*ulCarry = 0;*/
-    ldr x0, 0
+    mov x0, 0
     str x0, [sp, ULCARRY]
     /* lIndex = 0; */
     mov x0, 0
