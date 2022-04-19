@@ -26,13 +26,11 @@
     
     .global BigInt_larger
 
-    .global BigInt_add
-
 
 BigInt_larger:
 
-    /* create space on stack, store return address
-    and function parameters lLength1, lLength2 */
+    /* create space on stack, store return addresses
+        and function parameters lLength1, lLength2 */
     sub sp, sp, LARGER_STACK_BYTECOUNT
     str x30, [sp]
     str x0, [sp, LLENGTH1]
@@ -76,7 +74,7 @@ end:
     .equ OADD_END1, 56
     
 
-    
+    .global BigInt_add
 
 
 /* BigInt_add function */
@@ -147,7 +145,7 @@ forLoop:
    /* if (ulSum >= oAddend1->aulDigits[lIndex]) 
         goto noOverflow1; */
     cmp x0, x1
-    bge noOverflow1
+    bhs noOverflow1
     /* ulCarry = 1; */
     mov x3, 1
     str x3, [sp, ULCARRY]
@@ -163,7 +161,7 @@ noOverflow1:
     /* if (ulSum >= oAddend2->aulDigits[lIndex])
         goto noOverflow2; */
     cmp x0, x1
-    bge noOverflow2
+    bhs noOverflow2
     /* ulCarry = 1; */
     mov x3, 1
     str x3, [sp, ULCARRY]
