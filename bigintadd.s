@@ -95,9 +95,6 @@ BigInt_add:
     ldr x1, [x1]
     bl BigInt_larger
     str x0, [sp, LSUMLENGTH]
-    /*ulCarry = 0;*/
-    ldr x0, 0
-    str x0, [sp, ULCARRY]
  /*if (oSum->lLength <= lSumLength)
     goto skipMemset */
     ldr x2, [x2]
@@ -106,11 +103,9 @@ BigInt_add:
     
 
 /* memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long)) */
-    ldr x0, [sp]
-    add x0, x0, ULCARRY
-    bl sizeof
-    mov x2, x0
-    mul x2, x2, MAX_DIGITS
+    mov x2, 8
+    mov x3, MAX_DIGITS
+    mul x2, x2, x3
     ldr x0, [sp, OSUM]
     add x0, x0, 8
     mov x1, 0
@@ -119,7 +114,10 @@ BigInt_add:
 
 /* begin skipMemset : */
 skipMemset:
-/* lIndex = 0; */
+    /*ulCarry = 0;*/
+    ldr x0, 0
+    str x0, [sp, ULCARRY]
+    /* lIndex = 0; */
     mov x0, 0
     str x0, [sp, LINDEX]
 /*begin forLoop : */
@@ -198,7 +196,8 @@ endLoop:
     /* if (lSumLength != MAX_DIGITS)
         goto notFailure; */
     ldr x1, [sp, LSUMLENGTH]
-    cmp x1, MAX_DIGITS
+    mov x2, MAX_DIGITS
+    cmp x1, x2
     bne notFailure
 
     /* return FALSE; */
