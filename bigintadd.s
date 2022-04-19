@@ -3,7 +3,7 @@
 /* Authors: Aidan Walsh, Konstantin Howard                            */
 /*--------------------------------------------------------------------*/
 
-.equ MAX_DIGITS, 32678   
+.equ MAX_DIGITS, 32768   
 .equ FALSE, 0
 .equ TRUE, 1
 
