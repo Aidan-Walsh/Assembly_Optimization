@@ -45,7 +45,7 @@ BigInt_larger:
     str x30, [sp]
     str x19, [sp, FIRSTSTORE]
     str x20, [sp, SECONDSTORE]
-    str x21, [sp, THIRDSTORES]
+    str x21, [sp, THIRDSTORE]
     /* store parameters in registers */
     mov LLENGTH1, x0
     mov LLENGTH2, x1
@@ -67,7 +67,7 @@ end:
     ldr x30, [sp]
     ldr x19, [sp, FIRSTSTORE]
     ldr x20, [sp, SECONDSTORE]
-    ldr x21, [sp, THIRDSTORES]
+    ldr x21, [sp, THIRDSTORE]
     add sp, sp, LARGER_STACK_BYTECOUNT
     ret
 
@@ -129,7 +129,7 @@ BigInt_add:
     mov x2, SLONG
     mov x3, MAX_DIGITS
     mul x2, x2, x3
-    mov OSUM, x0
+    mov x0, OSUM
     add x0, x0, 8
     mov x1, 0
     bl memset
@@ -154,8 +154,7 @@ forLoop:
     mov ULSUM, ULCARRY
     mov ULCARRY, 0
     /* ulSum += oAddend1->aulDigits[lIndex]; */
-    ldr x1, [OADD_END1]
-    add x1, x1, 8
+    add x1, OADD_END1, 8
     ldr x1, [x1, LINDEX, lsl 3]
     add ULSUM, ULSUM, x1
    /* if (ulSum >= oAddend1->aulDigits[lIndex]) 
@@ -167,8 +166,7 @@ forLoop:
     /* begin noOverflow1: */
 noOverflow1:
     /* ulSum += oAddend2->aulDigits[lIndex]; */
-    ldr x1, [OADD_END2]
-    add x1, x1, 8
+    add x1, OADD_END2, 8
     ldr x1, [x1, LINDEX, lsl 3]
     add ULSUM, ULSUM, x1
 
@@ -183,8 +181,7 @@ noOverflow1:
 noOverflow2:
 
     /*oSum->aulDigits[lIndex] = ulSum; */
-    ldr x0, [OSUM]
-    add x0, x0, 8
+    add x0, OSUM, 8
     str ULSUM, [x0, LINDEX, lsl 3]
 
     /* lIndex++;
@@ -214,8 +211,7 @@ endLoop:
     /* begin notFailure:
     oSum->aulDigits[lSumLength] = 1; */
 notFailure:
-    ldr x0, [OSUM]
-    add x0, x0, 8
+    add x0, OSUM, 8
     mov x2, 1
     str x2, [x0, LSUMLENGTH, lsl 3]
 
