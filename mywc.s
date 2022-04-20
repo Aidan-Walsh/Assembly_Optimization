@@ -3,6 +3,8 @@
 /* Authors: Aidan Walsh, Konstantin Howard                            */
 /*--------------------------------------------------------------------*/
 
+/* EOF and newline characters have the following ASCII values */
+
     .equ EOF, -1
     .equ NEWLINE, 10
     .equ FALSE, 0
@@ -42,40 +44,47 @@ iChar:
 
         .global main
 main:
-    /* prolog */
+    /* prolog - get memory for stack and store return address
+    in stack pointer */
     sub sp, sp, MAIN_STACK_BYTECOUNT
     str x30, [sp]
-    /* don't necessarily need to store EOF in register and can make naming better */
     /* iChar = getChar() */
+    /* store the character in x1 which iChar points to */
     bl getChar
     adr x1, iChar
     str w0, [x1]
     
 /*begin while */
 whileLoop:
-      /*  if iChar == EOF, goto loopEnd */
-    
+
+        /*  if iChar == EOF, goto loopEnd */
     cmp w1, EOF
     beq loopEnd
     /*      lCharCount++ */
+    /* point x0 to lCharCount, then load its value, increment,
+    and store in x0 */
     adr x0, lCharCount
     ldr x1, [x0]
     add x1, x1, 1
     str x1, [x0]
     /*   if !isspace(iChar), goto notSpace */
-    /* put iChar in argument, then call function, and compare */
+    /* put iChar in argument(x0), then call function, and compare */
     adr x1, iChar
     ldr w0, [x1]
     bl isspace
     cmp w0, FALSE
     beq notSpace
-    /*       if !iInWord, goto notSpace */
+    /* if !iInWord, goto notSpace */
+    /* retreive iInWord and compare with false to determine */
     adr x0, iInWord
     ldr w1, [x0]
     cmp w1, FALSE
     beq notSpace
-     /* lWordCount++
-        iInWord = FALSE */
+    /* lWordCount++  
+    iInWord = FALSE */
+    /* retreive address and then load value of lWordCount, 
+    then increment and store, and do the same with iInword 
+    but use mov to turn to false*/
     adr x0, lWordCount
     ldr x1, [x0]
     add x1, x1, 1
@@ -87,21 +96,27 @@ whileLoop:
     /*   begin notSpace */
     notSpace:
         /*  if iInWord, goto InWord */
+        /* get address, load, and cmp with TRUE */
         adr x0, iInWord
         ldr w1, [x0]
         cmp w1, TRUE
         beq inWord
         /*  iInword = TRUE */
+        /* since we already have value in w1, change it to true
+        then store */
         mov w1, TRUE
         str w1, [x0]
         /* begin InWord */
     inWord:
          /* if iChar != '\n', goto notNewLine */
+         /* get address and load iChar, then compare with value of 
+         newline character */
         adr x0, iChar
         ldr w1, [x0]
         cmp w1, NEWLINE
         bne notNewLine
         /* lLineCount++ */
+        /* get address, load, then increment, and store */
         adr x0, lLinecount
         ldr x1, [x0]
         add x1, x1, 1
@@ -109,6 +124,8 @@ whileLoop:
     /*  begin notNewLine */
     notNewLine:
         /*  iChar = getChar() */
+        /* like we did above, call function, get address of iChar
+        then store w0 into what the address of iChar points to */
         bl getChar
         adr x1, iChar
         str w0, [x1]
@@ -118,6 +135,7 @@ whileLoop:
     /* begin endOfWhile */
     loopEnd:
         /*if !iInWord, goto end */
+        /* get address, load, and then compare with false */
         adr x0, iInWord
         ldr w1, [x0]
         cmp w1, FALSE
@@ -130,6 +148,7 @@ whileLoop:
     /* begin end */
      end:
         /* printf("%7ld %7ld %7ld\n", lLineCount, lWordCount, lCharCount) */
+        /* get address of variables, then load contents into correct registers */
         adr x0, finalStr
         adr x1, lLinecount
         ldr x1, [x1]
@@ -139,7 +158,8 @@ whileLoop:
         ldr x3, [x3]
         bl printf
 
-        /* return 0 and epilog */
+        /* return 0 and epilog - load the return address, then
+        get rid of stack memory*/
         mov w0, 0
         ldr x30, [sp]
         add sp, sp, MAIN_STACK_BYTECOUNT
