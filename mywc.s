@@ -45,9 +45,8 @@ main:
     /* prolog */
     sub sp, sp, MAIN_STACK_BYTECOUNT
     str x30, [sp]
-    /* don't necessarily need to store EOF in register and can make naming better */
     /* iChar = getChar() */
-    bl getChar
+    bl getchar
     adr x1, iChar
     str w0, [x1]
     
@@ -55,7 +54,7 @@ main:
 whileLoop:
       /*  if iChar == EOF, goto loopEnd */
     
-    cmp w1, EOF
+    cmp w0, EOF
     beq loopEnd
     /*      lCharCount++ */
     adr x0, lCharCount
@@ -73,7 +72,7 @@ whileLoop:
     adr x0, iInWord
     ldr w1, [x0]
     cmp w1, FALSE
-    beq notSpace
+    beq inWord
      /* lWordCount++
         iInWord = FALSE */
     adr x0, lWordCount
@@ -84,6 +83,9 @@ whileLoop:
     ldr w1, [x0]
     mov w1, FALSE
     str w1, [x0]
+    /* go to inWord, which is after the else statement that we would
+        skip */
+    b inWord
     /*   begin notSpace */
     notSpace:
         /*  if iInWord, goto InWord */
@@ -109,7 +111,7 @@ whileLoop:
     /*  begin notNewLine */
     notNewLine:
         /*  iChar = getChar() */
-        bl getChar
+        bl getchar
         adr x1, iChar
         str w0, [x1]
         /* goto while */
