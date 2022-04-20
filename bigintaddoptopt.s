@@ -16,6 +16,10 @@
 
 .section .text
     
+    /* structure offsets */
+    .equ LLENGTH, 0
+    .equ AULDIGITS, 8
+
     /* offsets */
     .equ FIRSTSTORE, 8
     .equ SECONDSTORE, 16
@@ -49,7 +53,7 @@
 /* BigInt_add function */
 BigInt_add:
 
-    /* prolog */
+    /* prolog - save register values to stack*/
     sub sp, sp, ADD_STACK_BYTECOUNT
     str x30, [sp]
     str x19, [sp, FIRSTSTORE]
@@ -65,9 +69,9 @@ BigInt_add:
     mov OADD_END2, x1
     mov OSUM, x2
 
-    /*lSumLength = BigInt_larger(oAddend1->lLength, oAddend2->lLength); */
-    ldr x0, [x0]
-    ldr x1, [x1]
+    /* storing lengths in registers */
+    ldr x0, [x0, LLENGTH]
+    ldr x1, [x1, LLENGTH]
 
     /* find larger of lengths and store it in lSumLength */
     /* if oAddend1->lLength >= oAddend2->lLength */
@@ -79,7 +83,7 @@ BigInt_add:
 
     /* skip the next part that would be the else */
     b twoLonger
-    
+
     /* begin oneLonger */
 oneLonger:
     /* LSUMLENGTH = oAddend1->lLength */
@@ -88,29 +92,34 @@ oneLonger:
 twoLonger:  
     /*if (oSum->lLength <= lSumLength)
     goto skipMemset */
-    ldr x2, [x2]
+    ldr x2, [x2, LLENGTH]
     cmp x2, x0
     ble skipMemset
     
 
 /* memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long)) */
+/* place values in correct argument registers */
     mov x2, SLONG
     mov x3, MAX_DIGITS
     mul x2, x2, x3
     mov x0, OSUM
-    add x0, x0, 8
+    add x0, x0, AULDIGITS
     mov x1, 0
     bl memset
 
 
 /* begin skipMemset : */
 skipMemset:
+
+    /* set carry condition to 0 */
+
     /*ulCarry = 0;*/
     mov ULCARRY, 0
     /* lIndex = 0; */
     mov LINDEX, 0
 
-     /*    if (lIndex >= lSumLength)
+    /* begin guarded for loop with condition */
+    /*    if (lIndex >= lSumLength)
         goto endLoop; */
     cmp LINDEX, LSUMLENGTH
     bge endLoop
@@ -119,7 +128,8 @@ skipMemset:
 forLoop: 
 
    
-
+    /* add oAddend1->aulDigits[lIndex] to oAddend2->aulDigits[lIndex]
+    where we adjust carry condition */
    /* ulSum = ulCarry;
     ulCarry = 0; */
     mov ULSUM, ULCARRY
@@ -156,15 +166,16 @@ noOverflow2:
     str ULSUM, [x0, LINDEX, lsl 3]
 
     /* lIndex++;
+    make sure LINDEX < LSUMLENGTH to iterate back through loop
+    (other part of guarded loop)
     goto forLoop; */
     add LINDEX, LINDEX, 1
-
     cmp LINDEX, LSUMLENGTH
     blt forLoop
 
    /* begin endLoop: */
 endLoop:
-
+    /* test to see if we carried last by using hs instruction*/
     /* if (ulCarry != 1)
         goto noCarry; */
     cmp ULCARRY, 1
@@ -181,26 +192,29 @@ endLoop:
     /* go to epilog */
     b epilog
     
-    /* begin notFailure:
-    oSum->aulDigits[lSumLength] = 1; */
+/* begin notFailure: */
 notFailure:
-    add x0, OSUM, 8
+    /* oSum->aulDigits[lSumLength] = 1; */
+    /* add offset to oSum and dereference with 
+    shift and load to manipulate value */
+    add x0, OSUM, AULDIGITS
     mov x2, 1
     str x2, [x0, LSUMLENGTH, lsl 3]
 
     /* lSumLength++; */
     add LSUMLENGTH, LSUMLENGTH, 1
 
-    /* begin noCarry:
-    oSum->lLength = lSumLength; */
+/* begin noCarry: */
 noCarry:
-    str LSUMLENGTH, [OSUM]
+    /* oSum->lLength = lSumLength; */
+    str LSUMLENGTH, [OSUM, LLENGTH]
 
     /* return TRUE; */
     mov x0, TRUE
 
 epilog:
-    /* epilogue */
+    /* epilog - restore previous register values 
+    and get rid of stack memory */
     ldr x30, [sp]
     ldr x19, [sp, FIRSTSTORE]
     ldr x20, [sp, SECONDSTORE]

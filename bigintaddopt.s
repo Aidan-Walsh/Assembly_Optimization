@@ -39,8 +39,8 @@
 
 BigInt_larger:
 
-    /* create space on stack, store return addresses
-        and function parameters lLength1, lLength2 */
+    /* create space on stack, and save previous values in registers
+    onto stack */
     sub sp, sp, LARGER_STACK_BYTECOUNT
     str x30, [sp]
     str x19, [sp, FIRSTSTORE]
@@ -62,7 +62,7 @@ lLength2Greater:
     /* lLarger = lLength2; */
     mov LLARGER, LLENGTH2
 end:
-    /* return lLarger and epilog */
+    /* return lLarger and epilog - restore register values */
     mov x0, LLARGER
     ldr x30, [sp]
     ldr x19, [sp, FIRSTSTORE]
@@ -89,6 +89,9 @@ end:
     OSUM .req x23
     OADD_END2 .req x24
     OADD_END1 .req x25
+    /* structure offsets */
+    .equ LLENGTH, 0
+    .equ AULDIGITS, 8
     
 
     .global BigInt_add
@@ -97,7 +100,8 @@ end:
 /* BigInt_add function */
 BigInt_add:
 
-    /* prolog */
+    /* prolog - allocate stack memory, save previous values
+    in registers */
     sub sp, sp, ADD_STACK_BYTECOUNT
     str x30, [sp]
     str x19, [sp, FIRSTSTORE]
@@ -114,23 +118,28 @@ BigInt_add:
     mov OSUM, x2
 
     /*lSumLength = BigInt_larger(oAddend1->lLength, oAddend2->lLength); */
-    ldr x0, [x0]
-    ldr x1, [x1]
+    /* dereference registers to get lengths, and load those values */
+    ldr x0, [x0, LLENGTH]
+    ldr x1, [x1, LLENGTH]
     bl BigInt_larger
     mov LSUMLENGTH, x0
     /*if (oSum->lLength <= lSumLength)
     goto skipMemset */
-    ldr x2, [x2]
+    /* dereference and load again */
+    ldr x2, [x2, LLENGTH]
     cmp x2, x0
     ble skipMemset
     
 
-/* memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long)) */
+    /* memset(oSum->aulDigits, 0, MAX_DIGITS * sizeof(unsigned long)) 
+     just move values into registers and we want memory location of 
+    aulDigits so we just add offset to its memory location that we 
+    place in x0 */
     mov x2, SLONG
     mov x3, MAX_DIGITS
     mul x2, x2, x3
     mov x0, OSUM
-    add x0, x0, 8
+    add x0, x0, AULDIGITS
     mov x1, 0
     bl memset
 
@@ -154,24 +163,29 @@ forLoop:
     mov ULSUM, ULCARRY
     mov ULCARRY, 0
     /* ulSum += oAddend1->aulDigits[lIndex]; */
-    add x1, OADD_END1, 8
+    /*OADD_END1 has memory address so we just add the required offset
+    and load with a shift to dereference */
+    add x1, OADD_END1, AULDIGITS
     ldr x1, [x1, LINDEX, lsl 3]
     add ULSUM, ULSUM, x1
    /* if (ulSum >= oAddend1->aulDigits[lIndex]) 
         goto noOverflow1; */
+    /* x1 already has what we need */
     cmp ULSUM, x1
     bhs noOverflow1
     /* ulCarry = 1; */
     mov ULCARRY, 1
-    /* begin noOverflow1: */
+/* begin noOverflow1: */
 noOverflow1:
     /* ulSum += oAddend2->aulDigits[lIndex]; */
-    add x1, OADD_END2, 8
+    /* do what we did before by adding, shifting, and loading */
+    add x1, OADD_END2, AULDIGITS
     ldr x1, [x1, LINDEX, lsl 3]
     add ULSUM, ULSUM, x1
 
     /* if (ulSum >= oAddend2->aulDigits[lIndex])
         goto noOverflow2; */
+    /* again, x1 already has what we need, so just compare */
     cmp ULSUM, x1
     bhs noOverflow2
     /* ulCarry = 1; */
@@ -181,7 +195,7 @@ noOverflow1:
 noOverflow2:
 
     /*oSum->aulDigits[lIndex] = ulSum; */
-    add x0, OSUM, 8
+    add x0, OSUM, AULDIGITS
     str ULSUM, [x0, LINDEX, lsl 3]
 
     /* lIndex++;
@@ -208,26 +222,30 @@ endLoop:
     /* go to epilog */
     b epilog
     
-    /* begin notFailure:
-    oSum->aulDigits[lSumLength] = 1; */
+/* begin notFailure: */
 notFailure:
-    add x0, OSUM, 8
+    /* oSum->aulDigits[lSumLength] = 1; */
+    /* method where we add to get memory location, then 
+    shift and load to dereference and assign value */
+    add x0, OSUM, AULDIGITS
     mov x2, 1
     str x2, [x0, LSUMLENGTH, lsl 3]
 
     /* lSumLength++; */
     add LSUMLENGTH, LSUMLENGTH, 1
 
-    /* begin noCarry:
-    oSum->lLength = lSumLength; */
+/* begin noCarry: */
 noCarry:
-    str LSUMLENGTH, [OSUM]
+    /* oSum->lLength = lSumLength; */
+    /* dereferencing osum + llength mem location will
+    let us manipulate value */
+    str LSUMLENGTH, [OSUM, LLENGTH]
 
     /* return TRUE; */
     mov x0, TRUE
 
 epilog:
-    /* epilogue */
+    /* epilogue - restore register values */
     ldr x30, [sp]
     ldr x19, [sp, FIRSTSTORE]
     ldr x20, [sp, SECONDSTORE]
