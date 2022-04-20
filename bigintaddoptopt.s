@@ -120,7 +120,7 @@ skipMemset:
     mov ULCARRY, 0
     /* lIndex = 0; */
     mov LINDEX, 0
-
+    mov x3, 0
     /* begin guarded for loop with condition */
     /*    if (lIndex >= lSumLength)
         goto endLoop; */
@@ -129,23 +129,29 @@ skipMemset:
 
 /*begin forLoop : */
 forLoop: 
+    /* if register x3 has a 1, then set cc to 1 */
+      
 
+noCC:
+        cmp x3, 1
+        bne isZero
+        cmp xzr, xzr
     /* ulSum = oAddend1->aulDigits[lIndex] + oAddend2->aulDigits[lIndex], 
     adjust carry condition */
     /* add oAddend1->aulDigits[lIndex] to oAddend2->aulDigits[lIndex]
     where we adjust carry condition */
+isZero:  
     add x1, OADD_END1, AULDIGITS
     ldr x1, [x1, LINDEX, lsl 3]
    
     add x2, OADD_END2, AULDIGITS
-    ldr x2, [x2, LINDEX, lsl 3]
-
-    adcs ULSUM, x2, x1
-    
+    ldr x2, [x2, LINDEX, lsl 3]    
+        adcs ULSUM, x2, x1
     /*oSum->aulDigits[lIndex] = ulSum; */
     add x0, OSUM, AULDIGITS
     str ULSUM, [x0, LINDEX, lsl 3]
 
+    adcs x3, xzr, xzr    
     /* lIndex++;
     make sure LINDEX < LSUMLENGTH to iterate back through loop
     (other part of guarded loop)
@@ -159,7 +165,8 @@ endLoop:
     /* test to see if we carried last by using cc instruction*/
     /* if (ulCarry != 1)
         goto noCarry; */
-    cc noCarry
+    cmp x3, 1
+    bne noCarry
     
     /* if (lSumLength != MAX_DIGITS)
         goto notFailure; */

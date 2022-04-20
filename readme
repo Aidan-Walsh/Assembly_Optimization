@@ -3,23 +3,29 @@ Assignment 5 readme File
 ------------------------------------------------------------------------
 Student 1: What is your name?
 
-
+Aidan Walsh
 
 ------------------------------------------------------------------------
 Student 2: What is your name?
 
-
+Konstantin Howard
 
 ------------------------------------------------------------------------
 How many late days are you using on this assignment?
 
-
+0
 
 ------------------------------------------------------------------------
 Student 1: What authorized sources of information did you use to
 complete the assignment? COPY THE LIST of authorized sources of
 information given in the "Policies" web page to this section of the
 readme file, and edit it as appropriate.
+
+The course's lectures.
+
+The course's precepts.
+
+The course's website.
 
 
 
@@ -28,6 +34,12 @@ Student 2: What authorized sources of information did you use to
 complete the assignment? COPY THE LIST of authorized sources of
 information given in the "Policies" web page to this section of the
 readme file, and edit it as appropriate.
+
+The course's lectures.
+
+The course's precepts.
+
+The course's website.
 
 
 
@@ -43,7 +55,7 @@ nature of the interaction, may additionally require the interaction
 being reported to the Committee on Discipline. Write "None" if you used
 no unauthorized sources of information.
 
-
+None
 
 ------------------------------------------------------------------------
 Student 2: What unauthorized sources of information did you use to
@@ -57,7 +69,7 @@ nature of the interaction, may additionally require the interaction
 being reported to the Committee on Discipline. Write "None" if you used
 no unauthorized sources of information.
 
-
+None
 
 ------------------------------------------------------------------------
 Student 1: What is your assessment of the assignment? Was it helpful?
@@ -81,7 +93,59 @@ particular, what bugs are in your submission?
 ------------------------------------------------------------------------
 What is your mywc program test plan?
 
+We included boundary test cases, statement test cases, and stress test
+cases.
 
+Boundary tests:
+	 mywcB1.txt: This file contains nothing (no characters,
+	 newlines, etc.) and so makes sure to test the boundary
+	 condition where we want to get a count of nothing. This
+	 also makes sure that the file works for the boundary case
+	 where the loop should not be entered into. Lines executed:
+	 30, 52, 55
+	 mywcB2.txt: This file contains the
+	 boundary case where we only receive characters
+	 - no newlines or spaces, so we make sure that it counts
+	 repeats of characters properly and handles this partcular
+	 boundary case properly. Lines executed: 30, 32, 34, 44, 45,
+	 48, 
+	 mywcB3.txt: This file contains the
+	 boundary case where input is only newlines.
+	 Ensures that this boundary case is handled properly and
+	 that sequential newlines are counted properly. Lines executed:
+	 
+	 mywcB4.txt: This file contains the
+	 boundary case where input is only spaces. Ensures
+	 that this boundary case is handled properly and that repeats
+	 of spaces are handled properly by the code - the loop works as
+	 it should. Lines executed: 
+	 mywcB5.txt: This file contains the
+	 boundary case where all types of characters that
+	 may be used are actually used. Each character is followed by
+	 a newline to ensure that they are read individually and
+	 properly. We want to be sure that the program handles all types
+	 of characters properly and counts them properly.
+	 Lines executed: 
+
+statement tests:
+	  mywcSTA1.txt: This file is a regular, medium sized text
+	  file with no special features, and so resembles a normal
+	  piece of text. It causes computer to execute lines
+	  mywcSTA2.txt: This file contains a line that simulates a
+	  title, then a paragraph below with multiple blank lines
+	  between the two. This simulates another typical piece of
+	  text with unique characteristics. This executes lines:
+
+Stress tests:
+       mywcSTR1.txt: This file uses all the different types of
+       characters but stresses in that it uses all the different
+       characters a massive number of times - 48500 characters in total.
+       This executes lines:
+       mywcSTR2.txt: This file is a file of randomly generated
+       characters and is generated until there are either 50000
+       characters or 1000 lines. This stresses because it is random,
+       thus unbiased, and tests with such a large quantity of random
+       characters. This most likely executes lines: 
 
 ------------------------------------------------------------------------
 What are the CPU times consumed by the programs from Parts 2a, 2b, 2d,
