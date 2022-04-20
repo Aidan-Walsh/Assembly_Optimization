@@ -111,7 +111,10 @@ twoLonger:
 /* begin skipMemset : */
 skipMemset:
 
-    /* set carry condition to 0 */
+    /* set carry condition to 0 by doing 
+    addition with no overflow */
+    mov x0, 0
+    adcs x0, x0, x0
 
     /*ulCarry = 0;*/
     mov ULCARRY, 0
@@ -127,42 +130,20 @@ skipMemset:
 /*begin forLoop : */
 forLoop: 
 
-   
+    /* ulSum = oAddend1->aulDigits[lIndex] + oAddend2->aulDigits[lIndex], 
+    adjust carry condition */
     /* add oAddend1->aulDigits[lIndex] to oAddend2->aulDigits[lIndex]
     where we adjust carry condition */
-   /* ulSum = ulCarry;
-    ulCarry = 0; */
-    mov ULSUM, ULCARRY
-    mov ULCARRY, 0
-    /* ulSum += oAddend1->aulDigits[lIndex]; */
-    add x1, OADD_END1, 8
+    add x1, OADD_END1, AULDIGITS
     ldr x1, [x1, LINDEX, lsl 3]
-    add ULSUM, ULSUM, x1
-   /* if (ulSum >= oAddend1->aulDigits[lIndex]) 
-        goto noOverflow1; */
-    cmp ULSUM, x1
-    bhs noOverflow1
-    /* ulCarry = 1; */
-    mov ULCARRY, 1
-    /* begin noOverflow1: */
-noOverflow1:
-    /* ulSum += oAddend2->aulDigits[lIndex]; */
-    add x1, OADD_END2, 8
-    ldr x1, [x1, LINDEX, lsl 3]
-    add ULSUM, ULSUM, x1
+   
+    add x2, OADD_END2, AULDIGITS
+    ldr x2, [x2, LINDEX, lsl 3]
 
-    /* if (ulSum >= oAddend2->aulDigits[lIndex])
-        goto noOverflow2; */
-    cmp ULSUM, x1
-    bhs noOverflow2
-    /* ulCarry = 1; */
-    mov ULCARRY, 1
-
-    /* begin noOverflow2: */
-noOverflow2:
-
+    adcs ULSUM, x2, x1
+    
     /*oSum->aulDigits[lIndex] = ulSum; */
-    add x0, OSUM, 8
+    add x0, OSUM, AULDIGITS
     str ULSUM, [x0, LINDEX, lsl 3]
 
     /* lIndex++;
@@ -175,11 +156,10 @@ noOverflow2:
 
    /* begin endLoop: */
 endLoop:
-    /* test to see if we carried last by using hs instruction*/
+    /* test to see if we carried last by using cc instruction*/
     /* if (ulCarry != 1)
         goto noCarry; */
-    cmp ULCARRY, 1
-    bne noCarry
+    cc noCarry
     
     /* if (lSumLength != MAX_DIGITS)
         goto notFailure; */
