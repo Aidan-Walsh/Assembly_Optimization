@@ -16,10 +16,6 @@
 
 .section .text
     
-    /* Return the larger of lLength1 and lLength2. */
-
-    .equ LARGER_STACK_BYTECOUNT, 32
-
     /* offsets */
     .equ FIRSTSTORE, 8
     .equ SECONDSTORE, 16
@@ -28,50 +24,6 @@
     .equ FIFTHSTORE, 40
     .equ SIXTHSTORE, 48
     .equ SEVSTORE, 56
-    /* offsets BigInt_larger's local variables and parameters */
-    LLARGER .req x19
-    LLENGTH2 .req x20
-    LLENGTH1 .req x21
-
-    
-    .global BigInt_larger
-
-
-BigInt_larger:
-
-    /* create space on stack, store return addresses
-        and function parameters lLength1, lLength2 */
-    sub sp, sp, LARGER_STACK_BYTECOUNT
-    str x30, [sp]
-    str x19, [sp, FIRSTSTORE]
-    str x20, [sp, SECONDSTORE]
-    str x21, [sp, THIRDSTORE]
-    /* store parameters in registers */
-    mov LLENGTH1, x0
-    mov LLENGTH2, x1
-    /*if (lLength2 >= lLength1) 
-    goto lLength2Greater;  */
-    cmp LLENGTH2, LLENGTH1
-    bge lLength2Greater
-    /*lLarger = lLength1; */
-    mov LLARGER, LLENGTH1
-    /*goto end:*/
-    b end
-/*begin lLength2Greater: */
-lLength2Greater:
-    /* lLarger = lLength2; */
-    mov LLARGER, LLENGTH2
-end:
-    /* return lLarger and epilog */
-    mov x0, LLARGER
-    ldr x30, [sp]
-    ldr x19, [sp, FIRSTSTORE]
-    ldr x20, [sp, SECONDSTORE]
-    ldr x21, [sp, THIRDSTORE]
-    add sp, sp, LARGER_STACK_BYTECOUNT
-    ret
-
-    .size BigInt_larger, (. - BigInt_larger)
 
 /*-------------------------------------------------------------------*/
 /* Assign the sum of oAddend1 and oAddend2 to oSum.  oSum should be
@@ -116,8 +68,24 @@ BigInt_add:
     /*lSumLength = BigInt_larger(oAddend1->lLength, oAddend2->lLength); */
     ldr x0, [x0]
     ldr x1, [x1]
-    bl BigInt_larger
+
+    /* find larger of lengths and store it in lSumLength */
+    /* if oAddend1->lLength >= oAddend2->lLength */
+    cmp x0, x1
+    bge oneLonger
+
+    /* lSumLength = oAddend2->lLength */
+    mov LSUMLENGTH, x1
+
+    /* skip the next part that would be the else */
+    b twoLonger
+    
+    /* begin oneLonger */
+oneLonger:
+    /* LSUMLENGTH = oAddend1->lLength */
     mov LSUMLENGTH, x0
+
+twoLonger:  
     /*if (oSum->lLength <= lSumLength)
     goto skipMemset */
     ldr x2, [x2]
