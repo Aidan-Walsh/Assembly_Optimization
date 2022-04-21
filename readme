@@ -81,14 +81,17 @@ Was it fun?
 Student 2: What is your assessment of the assignment? Was it helpful?
 Was it fun?
 
-
+This assignment was not bad. I found that it got me very familiar with
+assembly programming and I hadn't felt that through just precept and
+lectures. At the same time, Part 1 seemed extraneous for the rest of 
+the assignment and could probably be done without.
 
 ------------------------------------------------------------------------
 (optional) What information can you provide about your submission that
 will help your grader to grade it in the most favorable light? In
 particular, what bugs are in your submission?
 
-
+None.
 
 ------------------------------------------------------------------------
 What is your mywc program test plan?
@@ -108,44 +111,45 @@ Boundary tests:
 	 - no newlines or spaces, so we make sure that it counts
 	 repeats of characters properly and handles this partcular
 	 boundary case properly. Lines executed: 30, 32, 34, 44, 45,
-	 48, 
+	 48, 52, 53, 55.
 	 mywcB3.txt: This file contains the
 	 boundary case where input is only newlines.
 	 Ensures that this boundary case is handled properly and
 	 that sequential newlines are counted properly. Lines executed:
-	 
+	 30, 32, 34, 36, 48, 49, 52, 55.
 	 mywcB4.txt: This file contains the
 	 boundary case where input is only spaces. Ensures
 	 that this boundary case is handled properly and that repeats
 	 of spaces are handled properly by the code - the loop works as
-	 it should. Lines executed: 
+	 it should. Lines executed: 30, 32, 34, 36, 48, 52, 55.
 	 mywcB5.txt: This file contains the
 	 boundary case where all types of characters that
 	 may be used are actually used. Each character is followed by
 	 a newline to ensure that they are read individually and
 	 properly. We want to be sure that the program handles all types
 	 of characters properly and counts them properly.
-	 Lines executed: 
+	 Lines executed: All lines.
 
 statement tests:
 	  mywcSTA1.txt: This file is a regular, medium sized text
 	  file with no special features, and so resembles a normal
-	  piece of text. It causes computer to execute lines
+	  piece of text. It causes computer to execute lines:
+	  All lines.
 	  mywcSTA2.txt: This file contains a line that simulates a
 	  title, then a paragraph below with multiple blank lines
 	  between the two. This simulates another typical piece of
 	  text with unique characteristics. This executes lines:
-
+	  All lines.
 Stress tests:
        mywcSTR1.txt: This file uses all the different types of
        characters but stresses in that it uses all the different
        characters a massive number of times - 48500 characters in total.
-       This executes lines:
+       This executes lines: All lines.
        mywcSTR2.txt: This file is a file of randomly generated
        characters and is generated until there are either 50000
        characters or 1000 lines. This stresses because it is random,
        thus unbiased, and tests with such a large quantity of random
-       characters. This most likely executes lines: 
+       characters. This most likely executes lines: All lines.
 
 ------------------------------------------------------------------------
 What are the CPU times consumed by the programs from Parts 2a, 2b, 2d,
