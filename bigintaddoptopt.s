@@ -27,17 +27,15 @@
     .equ FOURTHSTORE, 32
     .equ FIFTHSTORE, 40
     .equ SIXTHSTORE, 48
-    .equ SEVSTORE, 56
 
 /*-------------------------------------------------------------------*/
 /* Assign the sum of oAddend1 and oAddend2 to oSum.  oSum should be
    distinct from oAddend1 and oAddend2.  Return 0 (FALSE) if an
    overflow occurred, and 1 (TRUE) otherwise. */
 
-    .equ ADD_STACK_BYTECOUNT, 64
+    .equ ADD_STACK_BYTECOUNT, 48
     /* BigInt_add's offsets local variables and parameters */
     /* local variables first */
-    ULCARRY .req x19
     ULSUM .req x20
     LINDEX .req x21
     LSUMLENGTH .req x22
@@ -50,30 +48,30 @@
     .global BigInt_add
 
 
-/* BigInt_add function */
+/* BigInt_add function, now 
+containing the BigInt_larger function */
 BigInt_add:
 
     /* prolog - save register values to stack*/
     sub sp, sp, ADD_STACK_BYTECOUNT
     str x30, [sp]
-    str x19, [sp, FIRSTSTORE]
-    str x20, [sp, SECONDSTORE]
-    str x21, [sp, THIRDSTORE]
-    str x22, [sp, FOURTHSTORE]
-    str x23, [sp, FIFTHSTORE]
-    str x24, [sp, SIXTHSTORE]
-    str x25, [sp, SEVSTORE]
+    str x20, [sp, FIRSTSTORE]
+    str x21, [sp, SECONDSTORE]
+    str x22, [sp, THIRDSTORE]
+    str x23, [sp, FOURTHSTORE]
+    str x24, [sp, FIFTHSTORE]
+    str x25, [sp, SIXTHSTORE]
 
     /* store parameters in registers */
     mov OADD_END1, x0
     mov OADD_END2, x1
     mov OSUM, x2
 
-    /* storing lengths in registers */
+    /* store parameter lengths in registers */
     ldr x0, [x0, LLENGTH]
     ldr x1, [x1, LLENGTH]
 
-    /* find larger of lengths and store it in lSumLength */
+    /* find larger of lengths store it in lSumLength */
     /* if oAddend1->lLength >= oAddend2->lLength */
     cmp x0, x1
     bge oneLonger
@@ -81,7 +79,8 @@ BigInt_add:
     /* lSumLength = oAddend2->lLength */
     mov LSUMLENGTH, x1
 
-    /* skip the next part that would be the else */
+    /* skip the part that would be 
+    if length of one were longer */
     b twoLonger
 
     /* begin oneLonger */
@@ -116,8 +115,6 @@ skipMemset:
     mov x0, 0
     adcs x0, x0, x0
 
-    /*ulCarry = 0;*/
-    mov ULCARRY, 0
     /* lIndex = 0; */
     mov LINDEX, 0
     mov x3, 0
@@ -129,47 +126,59 @@ skipMemset:
 
 /*begin forLoop : */
 forLoop: 
-    /* if register x3 has a 1, then set cc to 1 */
+    /* if register x3 has a 1, then set C to 1 
+    via a comparison that we know will do so */
       
-
 noCC:
         cmp x3, 1
         bne isZero
         cmp xzr, xzr
-    /* ulSum = oAddend1->aulDigits[lIndex] + oAddend2->aulDigits[lIndex], 
-    adjust carry condition */
-    /* add oAddend1->aulDigits[lIndex] to oAddend2->aulDigits[lIndex]
-    where we adjust carry condition */
+        
 isZero:  
+     /* ulSum = oAddend1->aulDigits[lIndex] + oAddend2->aulDigits[lIndex]; 
+    and adjust carry condition */
+    /* add respective digits given by LINDEX
+    where we adjust carry condition */
+
     add x1, OADD_END1, AULDIGITS
     ldr x1, [x1, LINDEX, lsl 3]
    
     add x2, OADD_END2, AULDIGITS
     ldr x2, [x2, LINDEX, lsl 3]    
-        adcs ULSUM, x2, x1
-    /*oSum->aulDigits[lIndex] = ulSum; */
+    
+    adcs ULSUM, x2, x1
+    
+    /* oSum->aulDigits[lIndex] = ulSum; 
+    set that digit of oSum to the calculated uSum */
+    
     add x0, OSUM, AULDIGITS
     str ULSUM, [x0, LINDEX, lsl 3]
 
+    /* save the carry value C in x3 */
     adcs x3, xzr, xzr    
+    
     /* lIndex++;
     make sure LINDEX < LSUMLENGTH to iterate back through loop
     (other part of guarded loop)
     goto forLoop; */
+    
     add LINDEX, LINDEX, 1
     cmp LINDEX, LSUMLENGTH
     blt forLoop
 
    /* begin endLoop: */
 endLoop:
-    /* test to see if we carried last by using cc instruction*/
-    /* if (ulCarry != 1)
+
+    /* test to see if we carried on last addition */
+    /* if (x3 != 1)
         goto noCarry; */
     cmp x3, 1
     bne noCarry
     
     /* if (lSumLength != MAX_DIGITS)
-        goto notFailure; */
+        goto notFailure; 
+    if we carried on the last available digit,
+    there was an overflow failure */
     mov x2, MAX_DIGITS
     cmp LSUMLENGTH, x2
     bne notFailure
@@ -181,9 +190,10 @@ endLoop:
     
 /* begin notFailure: */
 notFailure:
-    /* oSum->aulDigits[lSumLength] = 1; */
-    /* add offset to oSum and dereference with 
-    shift and load to manipulate value */
+
+    /* oSum->aulDigits[lSumLength] = 1;
+    access oSum's array of digits 
+    and add carried 1 */
     add x0, OSUM, AULDIGITS
     mov x2, 1
     str x2, [x0, LSUMLENGTH, lsl 3]
@@ -203,13 +213,12 @@ epilog:
     /* epilog - restore previous register values 
     and get rid of stack memory */
     ldr x30, [sp]
-    ldr x19, [sp, FIRSTSTORE]
-    ldr x20, [sp, SECONDSTORE]
-    ldr x21, [sp, THIRDSTORE]
-    ldr x22, [sp, FOURTHSTORE]
-    ldr x23, [sp, FIFTHSTORE]
-    ldr x24, [sp, SIXTHSTORE]
-    ldr x25, [sp, SEVSTORE]
+    ldr x20, [sp, FIRSTSTORE]
+    ldr x21, [sp, SECONDSTORE]
+    ldr x22, [sp, THIRDSTORE]
+    ldr x23, [sp, FOURTHSTORE]
+    ldr x24, [sp, FIFTHSTORE]
+    ldr x25, [sp, SIXTHSTORE]
     add sp, sp, ADD_STACK_BYTECOUNT
     ret
 
