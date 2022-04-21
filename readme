@@ -75,6 +75,10 @@ None
 Student 1: What is your assessment of the assignment? Was it helpful?
 Was it fun?
 
+This assignment was very helpful - it provided a lot of practice with 
+assembly and helped clear up confusion that I had in some areas. It
+was not too difficult - just required a lot of looking back and forth
+and a lot of converting/translating.
 
 
 ------------------------------------------------------------------------
@@ -110,7 +114,7 @@ Boundary tests:
 	 boundary case where we only receive characters
 	 - no newlines or spaces, so we make sure that it counts
 	 repeats of characters properly and handles this partcular
-	 boundary case properly. Lines executed: 30, 32, 34, 44, 45,
+	 boundary case properly. Lines executed: 30, 32, 34, 42, 44, 45,
 	 48, 52, 53, 55.
 	 mywcB3.txt: This file contains the
 	 boundary case where input is only newlines.
@@ -155,15 +159,15 @@ Stress tests:
 What are the CPU times consumed by the programs from Parts 2a, 2b, 2d,
 2e, and 2f to compute fib(250000) on armlab? Fill in the blanks.
 
-Part 2a:  12.13 _____ seconds
+Part 2a:  12.13 seconds
 
-Part 2b:  3.01 _____ seconds
+Part 2b:  3.01 seconds
 
 Part 2d:  7.17  seconds
 
 Part 2e:  3.44 seconds
 
-Part 2f:  _____ seconds
+Part 2f:  2.77 seconds
 
 
 
