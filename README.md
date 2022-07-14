@@ -1,4 +1,4 @@
-# Assembly Conversion
+# Assembly Optimization
 
 None of the c code is mine, but instead we converted the c found in bigintadd.c and mywc.c into assembly, in an attempt to beat the compiler in its conversion to assembly (another partnered task with @KonstantinHoward)! Our conversions our found in bigintadd.s, then an optimized version in bigintaddopt.s, and optimized even more in bigintaddoptopt.s, and mywc.s. The bigintadd program is just an addition to the implementation found in bigint.c (it is the adding method) that we wanted to optimize. This is because this method, when adding large numbers, is called many many times, thus it takes most of the run time! If we could optimize the assembly, then we would be significantly speeding up the runtime of many clients using the bigint library. 
 
